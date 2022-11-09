@@ -22,17 +22,6 @@ class ProductsAdmin(admin.ModelAdmin):
     list_display = ['name', 'model', 'release_data']
 
 
-# class CompanyContactsInline(admin.StackedInline):
-#     model = models.CompanyContacts
-#     list_display = [
-#         'county',
-#         'city',
-#         'street',
-#         'house_number'
-#     ]
-#
-#     extra = 1
-
 
 class CompanyProductsInline(admin.StackedInline):
     model = models.CompanyProducts

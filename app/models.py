@@ -50,7 +50,7 @@ class Company(models.Model):
 
 class CompanyStaff(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    staff = models.OneToOneField(User, on_delete=models.SET_NULL, null=True)
+    staff = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.company.name
