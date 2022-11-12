@@ -44,7 +44,7 @@ class CompanyAdmin(admin.ModelAdmin):
     fields = [
         'name',
         'type_company',
-        'county',
+        'country',
         'city',
         'street',
         'house_number',
@@ -67,9 +67,20 @@ class CompanyAdmin(admin.ModelAdmin):
             f'{provider.supplier}'
             f'</a>'
         )
+    @admin.action(description="Remove debts to suppliers selected Company's'")
+    def clear_debt(self, request, queryset):
+        updated = queryset.update(debt=0)
+        self.message_user(request, ngettext(
+            '%d debt was successfully removed.',
+            '%d debts were successfully removed.',
+            updated,
+        ) % updated, messages.SUCCESS)
 
 
-
+class SuppliersProductInline(admin.StackedInline):
+    model = models.SuppliersProduct
+    list_display = ['product']
+    extra = 1
 
 @admin.register(models.Suppliers)
 class SuppliersAdmin(admin.ModelAdmin):
@@ -84,4 +95,5 @@ class SuppliersAdmin(admin.ModelAdmin):
         'updated_at',
         'created_at'
     ]
+    inlines = [SuppliersProductInline]
     readonly_fields = ['updated_at', 'created_at']
