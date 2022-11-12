@@ -31,7 +31,7 @@ class Company(models.Model):
     name = models.CharField(max_length=256, unique=True)
     type_company = models.ForeignKey(TypeCompany, on_delete=models.SET_NULL, null=True)
     email = models.EmailField(max_length=64)
-    county = models.CharField(max_length=64)
+    country = models.CharField(max_length=64)
     city = models.CharField(max_length=32)
     street = models.CharField(max_length=64)
     house_number = models.CharField(max_length=16)
@@ -39,6 +39,12 @@ class Company(models.Model):
     debt = models.DecimalField(max_digits=11, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     level = models.IntegerField(default=0)
+
+    def save(self, *args, **kwargs):
+        self.country = self.country.lower()
+        self.city = self.city.lower()
+        self.street = self.street.lower()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -49,8 +55,8 @@ class Company(models.Model):
 
 
 class CompanyStaff(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    staff = models.ForeignKey(User, on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='company_staff')
+    staff = models.ForeignKey(User, on_delete=models.CASCADE, related_name='staff')
 
     def __str__(self):
         return self.company.name
@@ -60,14 +66,16 @@ class CompanyStaff(models.Model):
 
 
 class CompanyProducts(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    product = models.ForeignKey(Products, on_delete=models.SET_NULL, null=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='products_company')
+    product = models.ForeignKey(Products, on_delete=models.SET_NULL, null=True, related_name='company_product')
 
     def __str__(self):
         return self.product.name
 
     class Meta:
+        unique_together = (('company', 'product'),)
         verbose_name_plural = "Company Products"
+
 
 class Suppliers(models.Model):
     class Meta:
@@ -90,3 +98,11 @@ class Suppliers(models.Model):
         return f'{self.provider} - {self.seller}'
 
 
+class SuppliersProduct(models.Model):
+    suppler = models.ForeignKey(Suppliers, on_delete=models.CASCADE, related_name='supplier')
+    product = models.ForeignKey(Products, on_delete=models.CASCADE, related_name='product')
+
+    class Meta:
+        unique_together = (('suppler', 'product'),)
+        verbose_name = "Product of Supplier"
+        verbose_name_plural = "Products of Suppliers"

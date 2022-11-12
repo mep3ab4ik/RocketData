@@ -4,3 +4,6 @@ psycopg2==2.9.5
 djangorestframework==3.14.0
 drf_spectacular==0.24.2
 celery==5.2.7
+djoser==2.1.0
+redis
+django-celery-results==2.4.0
