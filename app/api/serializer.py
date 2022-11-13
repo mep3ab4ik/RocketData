@@ -1,22 +1,27 @@
+from decimal import Decimal
+
 from rest_framework import serializers
+
 from app import models
+from app.repositories import avg_debt
 
 
-class CreateProductSerializer(serializers.ModelSerializer):
+class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Products
         fields = [
+            'id',
             'name',
             'model',
             'release_data',
         ]
+        read_only_fields = ['id']
 
 
 class CompanySerializer(serializers.ModelSerializer):
     type_company = serializers.SerializerMethodField()
     supplier = serializers.SerializerMethodField()
     products = serializers.SerializerMethodField()
-    # product = CreateProductSerializer(many=True, read_only=True, required=False)
 
     class Meta:
         model = models.Company
@@ -52,7 +57,7 @@ class CompanySerializer(serializers.ModelSerializer):
         for i in obj.products_company.all():
             q.append(i.product.pk)
         product = models.Products.objects.filter(pk__in=q)
-        serializer = CreateProductSerializer(product, many=True)
+        serializer = ProductSerializer(product, many=True)
         return serializer.data
 
 
@@ -71,3 +76,34 @@ class CreateCompanySerializer(serializers.ModelSerializer):
         ]
 
 
+class DebtMoreAvgSerializer(serializers.ModelSerializer):
+    avg_debt = serializers.SerializerMethodField()
+    company = CompanySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = models.Company
+        fields = ['avg_debt', 'company']
+
+    @staticmethod
+    def get_avg_debt(obj: models.Company) -> Decimal:
+        return avg_debt()
+
+
+class UpdateCompanySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Company
+        fields = [
+            'id',
+            'name',
+            'type_company',
+            'supplier',
+            'email',
+            'country',
+            'city',
+            'street',
+            'house_number',
+            'debt',
+            'created_at',
+        ]
+        read_only_fields = ['id', 'debt', 'created_at']

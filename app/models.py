@@ -44,6 +44,14 @@ class Company(models.Model):
         self.country = self.country.lower()
         self.city = self.city.lower()
         self.street = self.street.lower()
+
+        if self.debt < 0:
+            self.debt = 0
+
+        if self.supplier:
+            self.level = self.supplier.level - 1
+        else:
+            self.level = 0
         super().save(*args, **kwargs)
 
     def __str__(self):
