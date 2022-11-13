@@ -17,3 +17,6 @@ app.conf.broker_url = 'redis://localhost:6379'
 
 # Load task modules from all registered Django apps.
 app.autodiscover_tasks()
+
+# @app.on_after_finalize.connect
+# def

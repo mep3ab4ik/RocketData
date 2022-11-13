@@ -96,4 +96,4 @@ class SuppliersAdmin(admin.ModelAdmin):
         'created_at'
     ]
     inlines = [SuppliersProductInline]
-    readonly_fields = ['updated_at', 'created_at']
+    readonly_fields = ['updated_at', 'created_at', 'provider']
