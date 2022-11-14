@@ -1,9 +1,9 @@
 from decimal import Decimal
+from typing import Optional
 
 from rest_framework import serializers
 
 from app import models
-from app.repositories import avg_debt
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -85,8 +85,8 @@ class DebtMoreAvgSerializer(serializers.ModelSerializer):
         fields = ['avg_debt', 'company']
 
     @staticmethod
-    def get_avg_debt(obj: models.Company) -> Decimal:
-        return avg_debt()
+    def get_avg_debt(obj: models.Company) -> Optional[Decimal]:
+        return
 
 
 class UpdateCompanySerializer(serializers.ModelSerializer):
