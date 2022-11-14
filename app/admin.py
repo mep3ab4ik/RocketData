@@ -1,10 +1,8 @@
-import random
-
 from django.contrib import admin, messages
 from django.utils.safestring import mark_safe
-from django.utils.translation import ngettext
 
 from app import models
+from app.tasks import clear_the_debt
 
 
 @admin.register(models.TypeCompany)
@@ -22,7 +20,6 @@ class ProductsAdmin(admin.ModelAdmin):
     list_display = ['name', 'model', 'release_data']
 
 
-
 class CompanyProductsInline(admin.StackedInline):
     model = models.CompanyProducts
     list_display = ['product']
@@ -37,6 +34,7 @@ class CompanyStaffInline(admin.StackedInline):
 
 @admin.register(models.Company)
 class CompanyAdmin(admin.ModelAdmin):
+    change_form_template = 'change_form_button.html'
     model = models.Company
     ordering = ['id']
     list_display = ['name', 'type_company', 'created_at']
@@ -57,6 +55,7 @@ class CompanyAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at', 'url_supplier']
     inlines = [CompanyStaffInline, CompanyProductsInline]
     actions = ['clear_debt']
+
     @staticmethod
     def url_supplier(request):
         if not request.supplier:
@@ -67,20 +66,29 @@ class CompanyAdmin(admin.ModelAdmin):
             f'{provider.supplier}'
             f'</a>'
         )
+
     @admin.action(description="Remove debts to suppliers selected Company's'")
     def clear_debt(self, request, queryset):
-        updated = queryset.update(debt=0)
-        self.message_user(request, ngettext(
-            '%d debt was successfully removed.',
-            '%d debts were successfully removed.',
-            updated,
-        ) % updated, messages.SUCCESS)
+        count = len(queryset)
+        if count > 20:
+            queryset = [field.pk for field in queryset]
+            clear_the_debt.apply_async(
+                args=[
+                    queryset
+                ],
+                serializer='json',
+            )
+            self.message_user(request, ' %d объектов сети обновлено поле debt = 0 ' % count, messages.SUCCESS)
+        else:
+            updated = queryset.update(debt=0)
+            self.message_user(request, 'У %d объектов сети обновлено поле debt = 0' % updated, messages.SUCCESS)
 
 
 class SuppliersProductInline(admin.StackedInline):
     model = models.SuppliersProduct
     list_display = ['product']
     extra = 1
+
 
 @admin.register(models.Suppliers)
 class SuppliersAdmin(admin.ModelAdmin):
@@ -96,4 +104,4 @@ class SuppliersAdmin(admin.ModelAdmin):
         'created_at'
     ]
     inlines = [SuppliersProductInline]
-    readonly_fields = ['updated_at', 'created_at', 'provider']
+    readonly_fields = ['updated_at', 'created_at']

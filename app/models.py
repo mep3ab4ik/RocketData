@@ -13,7 +13,6 @@ class TypeCompany(models.Model):
         verbose_name_plural = "Type Company's"
 
 
-
 class Products(models.Model):
     name = models.CharField(max_length=128)
     model = models.CharField(max_length=64)
@@ -76,9 +75,6 @@ class CompanyStaff(models.Model):
 class CompanyProducts(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='products_company')
     product = models.ForeignKey(Products, on_delete=models.SET_NULL, null=True, related_name='company_product')
-
-    def __str__(self):
-        return self.product.name
 
     class Meta:
         unique_together = (('company', 'product'),)
